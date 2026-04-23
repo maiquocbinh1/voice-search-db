@@ -1,0 +1,9 @@
+librosa
+soundfile
+numpy
+pandas
+matplotlib
+scipy
+tqdm
+datasets
+datasets
