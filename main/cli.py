@@ -11,6 +11,12 @@ from backend.search.voice_search import VoiceSearchEngine
 from backend.config import RAW_AUDIO_DIR, PROCESSED_AUDIO_DIR
 from utils.helpers import print_table, format_size
 
+try:
+    from main.web import run_web
+    WEB_AVAILABLE = True
+except ImportError:
+    WEB_AVAILABLE = False
+
 
 class CLI:
     """Command-line interface"""
@@ -128,29 +134,35 @@ class CLI:
    → Tìm top-5 giọng nói giống nhất
    → Hiển thị similarity score
 
-4. Xem thông tin:
+4. Giao diện web demo:
+   python main.py web
+   
+   → Mở trình duyệt tại http://127.0.0.1:5000
+   → Chọn file dữ liệu hoặc upload file truy vấn mới
+
+5. Xem thông tin:
    python main.py info
    
    → Hiển thị thống kê database
    → Kiểm tra status
 
-5. Trợ giúp:
+6. Trợ giúp:
    python main.py help
    python main.py -h / --help
 
 📂 Cấu trúc thư mục:
    - backend/        → Lõi ứng dụng
-   - main/           → CLI interface
+   - main/           → CLI & web interface
    - utils/          → Hàm tiện ích
-   - data/
-     ├── raw_audio/       → File âm thanh thô
-     └── processed_audio/ → Kết quả xử lý & database
+   - raw_audio/      → File âm thanh thô
+   - processed_audio/ → Kết quả xử lý & database
 
 🔧 Quy trình đầy đủ:
    1. Đặt file audio vào raw_audio/
    2. python main.py extract
    3. python main.py create-db
    4. python main.py search <file>
+   5. python main.py web
 """
         print(help_text)
 
@@ -177,6 +189,11 @@ def main():
             print("Cách sử dụng: python main.py search <đường_dẫn_file>")
             return
         cli.search_command(sys.argv[2])
+    elif command == 'web':
+        if not WEB_AVAILABLE:
+            print('❌ Lỗi: Flask chưa được cài đặt. Chạy `pip install flask` để sử dụng giao diện web.')
+            return
+        run_web()
     elif command == 'info':
         cli.info_command()
     else:

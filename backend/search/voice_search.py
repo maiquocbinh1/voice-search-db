@@ -9,7 +9,7 @@ import librosa
 from scipy.spatial.distance import cosine, euclidean
 
 from backend.config import (
-    TARGET_SAMPLE_RATE, TARGET_DURATION, N_MFCC, N_MELS, TOP_K
+    TARGET_SAMPLE_RATE, TARGET_DURATION, TOP_K, DISTANCE_METRIC
 )
 from backend.audio.preprocessing import normalize_audio, pad_or_trim, load_audio
 from backend.audio.processor import extract_features
@@ -19,7 +19,7 @@ from backend.database.queries import DatabaseQueries
 class VoiceSearchEngine:
     """Engine tìm kiếm giọng nói"""
     
-    def __init__(self, distance_metric: str = 'cosine', top_k: int = TOP_K):
+    def __init__(self, distance_metric: str = DISTANCE_METRIC, top_k: int = TOP_K):
         """
         Khởi tạo engine
         

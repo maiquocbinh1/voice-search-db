@@ -147,7 +147,7 @@ python main.py info
 ```bash
 python main.py extract
 ```
-- Tìm tất cả file audio trong `data/raw_audio/`
+- Tìm tất cả file audio trong `raw_audio/`
 - Xử lý: tải → chuẩn hóa → pad/trim
 - Trích 15 loại đặc trưng
 - Lưu `features.json` & `metadata.csv`

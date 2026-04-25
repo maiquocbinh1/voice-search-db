@@ -5,7 +5,7 @@
 ### 1. Đặt file âm thanh
 ```bash
 # Copy file audio vào thư mục này:
-data/raw_audio/
+raw_audio/
 ```
 
 ### 2. Trích xuất đặc trưng
@@ -22,8 +22,15 @@ Output: `voice_database.db`
 
 ### 4. Tìm kiếm
 ```bash
-python main.py search data/raw_audio/male_000.wav
+python main.py search raw_audio/male_000.wav
 ```
+
+### 5. Giao diện web demo
+```bash
+python main.py web
+```
+
+Mở http://127.0.0.1:5000 và chọn file hoặc upload file mới.
 
 ---
 
@@ -78,7 +85,7 @@ db.import_features()
 from backend.search import VoiceSearchEngine
 
 engine = VoiceSearchEngine()
-results = engine.search('data/raw_audio/query.wav')
+results = engine.search('raw_audio/query.wav')
 for file_id, score in results:
     print(f"{file_id}: {score:.4f}")
 
@@ -106,9 +113,9 @@ TOP_K = 5                         # Top results
 DISTANCE_METRIC = 'cosine'        # or 'euclidean'
 
 # Paths
-RAW_AUDIO_DIR = 'data/raw_audio'
-PROCESSED_AUDIO_DIR = 'data/processed_audio'
-DB_FILE = 'data/processed_audio/voice_database.db'
+RAW_AUDIO_DIR = 'raw_audio'
+PROCESSED_AUDIO_DIR = 'processed_audio'
+DB_FILE = 'processed_audio/voice_database.db'
 ```
 
 ---
@@ -146,7 +153,7 @@ DB_FILE = 'data/processed_audio/voice_database.db'
 ### No audio files found
 ```bash
 # Make sure files are in:
-data/raw_audio/
+raw_audio/
 # Supported: .wav, .flac, .mp3, .ogg
 ```
 

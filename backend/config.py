@@ -6,8 +6,20 @@ from pathlib import Path
 # ============ Đường dẫn ============
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
-RAW_AUDIO_DIR = DATA_DIR / "raw_audio"
-PROCESSED_AUDIO_DIR = DATA_DIR / "processed_audio"
+ROOT_RAW_AUDIO_DIR = PROJECT_ROOT / "raw_audio"
+ROOT_PROCESSED_AUDIO_DIR = PROJECT_ROOT / "processed_audio"
+
+# Nếu root-level directories chứa dữ liệu thực tế thì ưu tiên dùng chúng,
+# ngược lại fallback về cấu trúc data/ để tương thích với tài liệu.
+if ROOT_RAW_AUDIO_DIR.exists() and any(ROOT_RAW_AUDIO_DIR.iterdir()):
+    RAW_AUDIO_DIR = ROOT_RAW_AUDIO_DIR
+else:
+    RAW_AUDIO_DIR = DATA_DIR / "raw_audio"
+
+if ROOT_PROCESSED_AUDIO_DIR.exists() and any(ROOT_PROCESSED_AUDIO_DIR.iterdir()):
+    PROCESSED_AUDIO_DIR = ROOT_PROCESSED_AUDIO_DIR
+else:
+    PROCESSED_AUDIO_DIR = DATA_DIR / "processed_audio"
 
 # ============ File paths ============
 FEATURES_FILE = PROCESSED_AUDIO_DIR / "features.json"

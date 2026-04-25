@@ -44,10 +44,36 @@ def test_directory_structure():
         'backend/audio',
         'backend/database',
         'backend/search',
-        'utils',
-        'data/raw_audio',
-        'data/processed_audio'
+        'utils'
     ]
+
+    # Chấp nhận cấu trúc dữ liệu ở root-level hoặc trong data/
+    audio_dirs = [Path('raw_audio'), Path('data/raw_audio')]
+    processed_dirs = [Path('processed_audio'), Path('data/processed_audio')]
+
+    for option in audio_dirs:
+        if option.exists() and option.is_dir():
+            required_dirs.append(str(option))
+            break
+    else:
+        print(f"❌ Không tìm thấy thư mục raw_audio (root-level hoặc data/raw_audio)")
+        return False
+
+    for option in processed_dirs:
+        if option.exists() and option.is_dir():
+            required_dirs.append(str(option))
+            break
+    else:
+        print(f"❌ Không tìm thấy thư mục processed_audio (root-level hoặc data/processed_audio)")
+        return False
+
+    for dir_name in required_dirs:
+        dir_path = Path(dir_name)
+        if dir_path.exists() and dir_path.is_dir():
+            print(f"✅ {dir_name}/")
+        else:
+            print(f"❌ {dir_name}/ (không tồn tại)")
+            return False
     
     for dir_name in required_dirs:
         dir_path = Path(dir_name)

@@ -1,58 +1,58 @@
-# 🎵 Voice Search System - Male Voice Similarity Search
+#  Voice Search System - Male Voice Similarity Search
 
 Hệ thống tìm kiếm giọng nói đàn ông sử dụng kỹ thuật xử lý tín hiệu âm thanh để tìm kiếm các file âm thanh có giọng nói tương tự nhất.
 
-## ✨ Tính Năng
+## Tính Năng
 
-- 🎵 **Xử lý âm thanh**: Trích xuất 15 loại đặc trưng âm thanh (MFCC, Mel, Chroma, Spectral)
-- 💾 **Cơ sở dữ liệu**: SQLite database với metadata và features
-- 🔍 **Tìm kiếm tương tự**: So sánh cosine/euclidean distance
-- 🖥️ **CLI Interface**: Giao diện dòng lệnh dễ sử dụng
-- 📊 **Modular Architecture**: Cấu trúc module rõ ràng, dễ mở rộng
+- **Xử lý âm thanh**: Trích xuất 15 loại đặc trưng âm thanh (MFCC, Mel, Chroma, Spectral)
+- **Cơ sở dữ liệu**: SQLite database với metadata và features
+- **Tìm kiếm tương tự**: So sánh cosine/euclidean distance
+-  **CLI Interface**: Giao diện dòng lệnh dễ sử dụng
+- **Modular Architecture**: Cấu trúc module rõ ràng, dễ mở rộng
 
-## 🏗️ Cấu Trúc Dự Án (Mới)
+## Cấu Trúc Dự Án (Mới)
 
 ```
 voice_project/
-├── main.py                          # 🚀 Entry point
-├── main/cli.py                      # 🖥️  CLI interface
-├── backend/                         # 🧠 Core backend
+├── main.py                          # Entry point
+├── main/cli.py                      # CLI interface
+├── backend/                         # Core backend
 │   ├── __init__.py
-│   ├── config.py                    # ⚙️  Configuration
-│   ├── audio/                       # 🎵 Audio processing
+│   ├── config.py                    # Configuration
+│   ├── audio/                       #Audio processing
 │   │   ├── __init__.py
 │   │   ├── preprocessing.py         # Audio loading & normalization
 │   │   └── processor.py             # Feature extraction
-│   ├── database/                    # 💾 Database management
+│   ├── database/                    # Database management
 │   │   ├── __init__.py
 │   │   ├── db_manager.py            # DB operations
 │   │   └── queries.py               # DB queries
-│   └── search/                      # 🔍 Voice search
+│   └── search/                      # Voice search
 │       ├── __init__.py
 │       └── voice_search.py          # Search engine
-├── utils/                           # 🛠️  Utilities
+├── utils/                           # Utilities
 │   ├── __init__.py
 │   └── helpers.py                   # Helper functions
-├── data/                            # 📊 Data files
+├── data/                            # Data files
 │   ├── raw_audio/                   # Raw audio files (739 files)
 │   └── processed_audio/             # Processed data
 │       ├── features.json            # Extracted features
 │       ├── metadata.csv             # Audio metadata
 │       └── voice_database.db        # SQLite database
-├── requirements.txt                 # 📦 Dependencies
-├── README.md                        # 📖 This file
-├── PROJECT_STRUCTURE.md             # 🏛️ Architecture guide
-├── QUICK_REFERENCE.md               # ⚡ Quick start
-├── GITHUB_PUSH_GUIDE.md             # 🚀 GitHub guide
-├── test_structure.py                # 🧪 Structure test
-└── setup_git_branches.py            # 🔀 Git workflow
+├── requirements.txt                 # Dependencies
+├── README.md                        # This file
+├── PROJECT_STRUCTURE.md             # Architecture guide
+├── QUICK_REFERENCE.md               # Quick start
+├── GITHUB_PUSH_GUIDE.md             #  GitHub guide
+├── test_structure.py                # Structure test
+└── setup_git_branches.py            # Git workflow
 ```
 
-## 🚀 Quick Start (5 phút)
+##  Quick Start (5 phút)
 
 ### 1. Chuẩn Bị Dữ Liệu
 ```bash
-# Đặt file âm thanh vào thư mục data/raw_audio/
+# Đặt file âm thanh vào thư mục raw_audio/
 # Hỗ trợ: .wav, .flac, .mp3, .ogg
 ```
 
@@ -75,11 +75,17 @@ python main.py create-db
 
 ### 5. Tìm Kiếm Giọng Nói
 ```bash
-python main.py search data/raw_audio/male_000.wav
+python main.py search raw_audio/male_000.wav
 ```
 → Hiển thị top-5 giọng nói giống nhất
 
-## 🎯 CLI Commands
+### 6. Mở giao diện web demo
+```bash
+python main.py web
+```
+→ Truy cập http://127.0.0.1:5000 để sử dụng giao diện demo
+
+##  CLI Commands
 
 | Command | Description |
 |---------|-------------|
@@ -89,7 +95,7 @@ python main.py search data/raw_audio/male_000.wav
 | `python main.py info` | Hiển thị thông tin database |
 | `python main.py help` | Hiển thị trợ giúp |
 
-## 📊 Đặc Trưng Âm Thanh (15 loại)
+##  Đặc Trưng Âm Thanh (15 loại)
 
 1. **MFCC** (13 coefficients) - Mean & Std
 2. **Mel Spectrogram** (64 bins) - Mean & Std
@@ -112,10 +118,10 @@ TOP_K = 5                     # Search results
 DISTANCE_METRIC = 'cosine'    # 'cosine' or 'euclidean'
 ```
 
-## 📈 Workflow Chi Tiết
+##  Workflow Chi Tiết
 
 ### Bước 1: Thu Thập Dữ Liệu
-- Đặt 739 file giọng nam vào `data/raw_audio/`
+- Đặt 739 file giọng nam vào `raw_audio/`
 - Mỗi file: 3 giây, 16kHz, WAV 16-bit
 
 ### Bước 2: Xử Lý Âm Thanh
@@ -155,13 +161,13 @@ python test_structure.py
 python -c "from backend.audio import extract_features; print('✅ OK')"
 ```
 
-## 📚 Documentation
+##  Documentation
 
 - **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Hướng dẫn cấu trúc chi tiết
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Tài liệu tham khảo nhanh
 - **[GITHUB_PUSH_GUIDE.md](GITHUB_PUSH_GUIDE.md)** - Hướng dẫn push lên GitHub
 
-## 🔄 Git Branches
+## Git Branches
 
 Dự án sử dụng Git Flow với các branch:
 
@@ -172,7 +178,7 @@ Dự án sử dụng Git Flow với các branch:
 - `feature/utils-helpers` - Utilities
 - `feature/documentation` - Docs
 
-## 🚀 Deployment
+##  Deployment
 
 ### Local Development
 ```bash
@@ -197,7 +203,7 @@ docker build -t voice-search .
 docker run voice-search python main.py search sample.wav
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork repository
 2. Tạo feature branch: `git checkout -b feature/new-feature`
@@ -205,18 +211,18 @@ docker run voice-search python main.py search sample.wav
 4. Push branch: `git push origin feature/new-feature`
 5. Tạo Pull Request
 
-## 📄 License
+##  License
 
 MIT License - Xem LICENSE file để biết thêm chi tiết.
 
-## 👥 Authors
+##  Authors
 
 - **Developer**: Voice Search Team
 - **Contact**: voice.search.dev@example.com
 
 ---
 
-**🎉 Happy Voice Searching!**
+** Happy Voice Searching!**
 - Output: Top 5 file giọng nói giống nhất
 - Metric: Cosine similarity
 
