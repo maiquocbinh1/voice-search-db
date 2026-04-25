@@ -277,3 +277,4 @@ Rank  File ID              Similarity      Source
 - Thêm giọng nữ hoặc đa ngôn ngữ
 - Sử dụng ANN (Approximate Nearest Neighbor) cho dataset lớn
 - Tích hợp machine learning để cải thiện độ chính xác
+"# voice-search-project" 
