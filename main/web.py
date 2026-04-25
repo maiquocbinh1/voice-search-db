@@ -25,100 +25,135 @@ PAGE_TEMPLATE = """<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Voice Search Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f9; color: #222; }
-    header { background: #0b3d91; color: white; padding: 18px 28px; }
-    .container { max-width: 960px; margin: 24px auto; padding: 0 18px; }
-    .panel { background: white; border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.08); padding: 22px; margin-bottom: 24px; }
-    h1 { margin-top: 0; }
-    label { font-weight: 700; display: block; margin-top: 16px; }
-    select, input[type=file], button { width: 100%; font-size: 1rem; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; }
-    button { background: #0b3d91; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0d3f9c; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-    th { background: #eef2ff; }
-    .note { color: #6b7280; font-size: 0.95rem; margin-top: 8px; }
-    .error { color: #b91c1c; font-weight: 700; }
-    .audio-row audio { width: 100%; }
-    .stats { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px; }
-    .metric { background: #eef2ff; padding: 14px 18px; border-radius: 12px; flex: 1; min-width: 180px; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    .hero { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; color: white; }
+    .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .btn-primary { background: linear-gradient(45deg, #667eea, #764ba2); border: none; }
+    .btn-primary:hover { background: linear-gradient(45deg, #5a6fd8, #6a4190); }
+    .form-control, .form-select { border-radius: 10px; }
+    .table { border-radius: 10px; overflow: hidden; }
+    .audio-player { width: 100%; max-width: 300px; }
+    .metric-card { background: rgba(255,255,255,0.9); border-radius: 10px; padding: 1rem; text-align: center; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Voice Search Demo</h1>
-    <p>Chọn một file giọng nam hoặc tải file truy vấn mới để tìm 5 file tương tự nhất.</p>
-  </header>
-  <div class="container">
-    <div class="panel">
-      <form method="post" enctype="multipart/form-data">
-        <label for="dataset_file">1. Chọn file trong dữ liệu hiện có</label>
-        <select id="dataset_file" name="dataset_file">
-          <option value="">-- Chọn file giọng đầu vào --</option>
-          {% for filename in dataset_files %}
-          <option value="{{ filename }}" {% if filename == selected_dataset_file %}selected{% endif %}>{{ filename }}</option>
-          {% endfor %}
-        </select>
-
-        <label for="upload_file">Hoặc tải file truy vấn mới</label>
-        <input id="upload_file" type="file" name="upload_file" accept=".wav,.flac,.mp3,.ogg">
-
-        <label for="metric">Khoảng cách so sánh</label>
-        <select id="metric" name="metric">
-          <option value="cosine" {% if metric == 'cosine' %}selected{% endif %}>Cosine Similarity</option>
-          <option value="euclidean" {% if metric == 'euclidean' %}selected{% endif %}>Euclidean Distance</option>
-        </select>
-
-        <button type="submit">Tìm kiếm</button>
-      </form>
-      <p class="note">Bạn có thể chọn file trong bộ dữ liệu hoặc tải lên file âm thanh mới. Nếu cả hai đều có, hệ thống ưu tiên file tải lên.</p>
-      {% if error_message %}
-      <p class="error">{{ error_message }}</p>
-      {% endif %}
+  <div class="container py-5">
+    <div class="hero text-center mb-5">
+      <h1 class="display-4"><i class="fas fa-microphone-alt"></i> Voice Search Demo</h1>
+      <p class="lead">Tìm kiếm giọng nói tương tự bằng công nghệ AI</p>
     </div>
 
-    <div class="panel stats">
-      <div class="metric">
-        <strong>Dataset Files</strong>
-        <div>{{ dataset_count }}</div>
-      </div>
-      <div class="metric">
-        <strong>Database</strong>
-        <div>{{ db_status }}</div>
-      </div>
-      <div class="metric">
-        <strong>Hiện tại</strong>
-        <div>{{ query_label }}</div>
-      </div>
-    </div>
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card p-4 mb-4">
+          <h2 class="mb-4"><i class="fas fa-search"></i> Tìm kiếm giọng nói</h2>
+          <form method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="dataset_file" class="form-label"><i class="fas fa-folder-open"></i> Chọn file trong dữ liệu hiện có</label>
+              <select class="form-select" id="dataset_file" name="dataset_file">
+                <option value="">-- Chọn file giọng đầu vào --</option>
+                {% for filename in dataset_files %}
+                <option value="{{ filename }}" {% if filename == selected_dataset_file %}selected{% endif %}>{{ filename }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-    {% if results %}
-    <div class="panel">
-      <h2>Kết quả Top {{ results|length }}</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>File ID</th>
-            <th>Similarity</th>
-            <th>Tên nguồn</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in results %}
-          <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ row.file_id }}</td>
-            <td>{{ row.similarity }}</td>
-            <td>{{ row.source_path }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            <div class="mb-3">
+              <label for="upload_file" class="form-label"><i class="fas fa-upload"></i> Hoặc tải file truy vấn mới</label>
+              <input class="form-control" id="upload_file" type="file" name="upload_file" accept=".wav,.flac,.mp3,.ogg">
+            </div>
+
+            <div class="mb-3">
+              <label for="metric" class="form-label"><i class="fas fa-calculator"></i> Khoảng cách so sánh</label>
+              <select class="form-select" id="metric" name="metric">
+                <option value="cosine" {% if metric == 'cosine' %}selected{% endif %}>Cosine Similarity</option>
+                <option value="euclidean" {% if metric == 'euclidean' %}selected{% endif %}>Euclidean Distance</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100"><i class="fas fa-search"></i> Tìm kiếm</button>
+          </form>
+          <p class="text-muted mt-3"><small>Bạn có thể chọn file trong bộ dữ liệu hoặc tải lên file âm thanh mới. Nếu cả hai đều có, hệ thống ưu tiên file tải lên.</small></p>
+          {% if error_message %}
+          <div class="alert alert-danger mt-3"><i class="fas fa-exclamation-triangle"></i> {{ error_message }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="metric-card">
+              <i class="fas fa-database fa-2x text-primary mb-2"></i>
+              <h5>Dataset Files</h5>
+              <span class="badge bg-primary fs-6">{{ dataset_count }}</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="metric-card">
+              <i class="fas fa-server fa-2x text-success mb-2"></i>
+              <h5>Database</h5>
+              <span class="badge {% if db_status == 'OK' %}bg-success{% else %}bg-danger{% endif %} fs-6">{{ db_status }}</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="metric-card">
+              <i class="fas fa-music fa-2x text-info mb-2"></i>
+              <h5>Truy vấn hiện tại</h5>
+              <small>{{ query_label }}</small>
+            </div>
+          </div>
+        </div>
+
+        {% if query_audio %}
+        <div class="card p-3 mb-4">
+          <h5><i class="fas fa-play-circle"></i> File truy vấn</h5>
+          <audio controls class="audio-player">
+            <source src="{{ query_audio }}" type="audio/wav">
+            Trình duyệt của bạn không hỗ trợ audio.
+          </audio>
+        </div>
+        {% endif %}
+
+        {% if results %}
+        <div class="card p-4">
+          <h2 class="mb-4"><i class="fas fa-list-ol"></i> Kết quả Top {{ results|length }}</h2>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>#</th>
+                  <th>File ID</th>
+                  <th>Độ tương tự</th>
+                  <th>Tên file</th>
+                  <th>Nghe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in results %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ row.file_id }}</td>
+                  <td><span class="badge bg-info">{{ row.similarity }}</span></td>
+                  <td>{{ row.source_path }}</td>
+                  <td>
+                    <audio controls class="audio-player">
+                      <source src="{{ url_for('serve_audio', filename=row.source_path) }}" type="audio/wav">
+                      Trình duyệt của bạn không hỗ trợ audio.
+                    </audio>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endif %}
+      </div>
     </div>
-    {% endif %}
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>"""
 
@@ -161,6 +196,7 @@ def create_app() -> 'Flask':
         selected_dataset_file = ''
         metric = 'cosine'
         query_label = 'Chưa chọn file truy vấn'
+        query_audio = None
 
         if request.method == 'POST':
             selected_dataset_file = request.form.get('dataset_file', '')
@@ -177,9 +213,11 @@ def create_app() -> 'Flask':
                     upload_file.save(saved_path)
                     query_path = saved_path
                     query_label = f'Tải lên: {upload_file.filename}'
+                    query_audio = url_for('serve_upload', filename=safe_name)
             elif selected_dataset_file:
                 query_path = RAW_AUDIO_DIR / Path(selected_dataset_file).name
                 query_label = f'Dữ liệu: {selected_dataset_file}'
+                query_audio = url_for('serve_audio', filename=selected_dataset_file)
 
             if query_path and not error_message:
                 if not query_path.exists():
@@ -200,6 +238,7 @@ def create_app() -> 'Flask':
             selected_dataset_file=selected_dataset_file,
             metric=metric,
             query_label=query_label,
+            query_audio=query_audio,
         )
 
     @app.route('/audio/<path:filename>')
