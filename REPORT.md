@@ -63,7 +63,7 @@ Rank  File ID              Similarity      Source
 ## 6. Cách Sử Dụng
 ```bash
 # Tìm kiếm giọng nói tương tự
-python scripts/search_voices.py path/to/query_audio.wav
+python main.py search path/to/query_audio.wav
 ```
 
 ## 7. Kết Luận

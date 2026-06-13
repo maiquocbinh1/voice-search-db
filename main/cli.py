@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Optional
 
 from backend.audio.processor import process_audio_files, save_features_and_metadata
+from backend.audio.preprocessing import standardize_audio_files
 from backend.database import DatabaseManager
 from backend.search.voice_search import VoiceSearchEngine
-from backend.config import RAW_AUDIO_DIR, PROCESSED_AUDIO_DIR
+from backend.config import RAW_AUDIO_DIR, AUDIO_DIR, PROCESSED_AUDIO_DIR, TARGET_DURATION
 from utils.helpers import print_table, format_size
 
 try:
@@ -25,14 +26,37 @@ class CLI:
         self.db_manager = DatabaseManager()
         self.search_engine = VoiceSearchEngine()
     
+    def standardize_command(self) -> None:
+        """Chuẩn hóa tất cả file trong raw_audio về cùng độ dài (3 giây)"""
+        print(f"🎚️  Chuẩn hóa độ dài file âm thanh về {TARGET_DURATION} giây...")
+        print(f"📁 Đầu vào: {RAW_AUDIO_DIR}")
+        print(f"📁 Đầu ra:  {AUDIO_DIR}")
+
+        report = standardize_audio_files(RAW_AUDIO_DIR, AUDIO_DIR, TARGET_DURATION)
+
+        if not report:
+            print("❌ Không chuẩn hóa được file nào")
+            return
+
+        durations = [r["original_duration_s"] for r in report]
+        shortest = min(report, key=lambda r: r["original_duration_s"])
+        longest = max(report, key=lambda r: r["original_duration_s"])
+
+        print("\n📊 Thống kê độ dài GỐC (trước chuẩn hóa):")
+        print(f"  - Số file:      {len(report)}")
+        print(f"  - Ngắn nhất:    {shortest['original_duration_s']} s ({shortest['file_id']})")
+        print(f"  - Dài nhất:     {longest['original_duration_s']} s ({longest['file_id']})")
+        print(f"  - Trung bình:   {round(sum(durations) / len(durations), 3)} s")
+        print(f"\n✅ Tất cả file sau chuẩn hóa đều = {TARGET_DURATION} giây")
+
     def extract_features_command(self) -> None:
         """Trích xuất đặc trưng từ file audio"""
         print("🎵 Bắt đầu trích xuất đặc trưng từ audio...")
-        print(f"📁 Đầu vào: {RAW_AUDIO_DIR}")
+        print(f"📁 Đầu vào: {AUDIO_DIR}")
         print(f"📁 Đầu ra:  {PROCESSED_AUDIO_DIR}")
         
         # Xử lý
-        all_features, metadata_list = process_audio_files(RAW_AUDIO_DIR, PROCESSED_AUDIO_DIR)
+        all_features, metadata_list = process_audio_files(AUDIO_DIR, PROCESSED_AUDIO_DIR)
         
         if not all_features:
             print("❌ Không xử lý được file nào")
@@ -49,6 +73,7 @@ class CLI:
             self.db_manager.create_tables()
             self.db_manager.import_metadata()
             self.db_manager.import_features()
+            self.db_manager.import_feature_vectors()
             self.db_manager.get_statistics()
             print("\n✅ Tạo database hoàn thành!")
         except Exception as e:
@@ -110,6 +135,13 @@ class CLI:
 
 📋 Lệnh có sẵn:
 
+0. Chuẩn hóa độ dài file âm thanh:
+   python main.py standardize
+
+   → Đưa tất cả file trong raw_audio/ về CÙNG độ dài 3 giây
+   → Cắt file dài, thêm khoảng lặng cho file ngắn
+   → Lưu file .wav chuẩn hóa vào processed_audio/standardized_audio/
+
 1. Trích xuất đặc trưng âm thanh:
    python main.py extract
    
@@ -159,10 +191,11 @@ class CLI:
 
 🔧 Quy trình đầy đủ:
    1. Đặt file audio vào raw_audio/
-   2. python main.py extract
-   3. python main.py create-db
-   4. python main.py search <file>
-   5. python main.py web
+   2. python main.py standardize   (chuẩn hóa về cùng 3 giây)
+   3. python main.py extract
+   4. python main.py create-db
+   5. python main.py search <file>
+   6. python main.py web
 """
         print(help_text)
 
@@ -179,6 +212,8 @@ def main():
     
     if command in ['help', '-h', '--help']:
         cli.show_help()
+    elif command == 'standardize':
+        cli.standardize_command()
     elif command == 'extract':
         cli.extract_features_command()
     elif command == 'create-db':

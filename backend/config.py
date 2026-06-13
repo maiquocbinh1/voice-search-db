@@ -26,6 +26,13 @@ FEATURES_FILE = PROCESSED_AUDIO_DIR / "features.json"
 METADATA_CSV = PROCESSED_AUDIO_DIR / "metadata.csv"
 DB_FILE = PROCESSED_AUDIO_DIR / "voice_database.db"
 
+# Thư mục chứa file âm thanh đã chuẩn hóa về cùng độ dài (3 giây).
+# Đây là DATASET LÀM VIỆC CHÍNH dùng cho extract / search / web.
+# raw_audio/ được giữ lại làm bản gốc (backup).
+AUDIO_DIR = PROJECT_ROOT / "audio"
+# Giữ tên cũ để tương thích ngược (trỏ về cùng thư mục audio/)
+STANDARDIZED_AUDIO_DIR = AUDIO_DIR
+
 # ============ Audio Configuration ============
 TARGET_SAMPLE_RATE = 16000
 TARGET_DURATION = 3.0
@@ -42,3 +49,4 @@ DISTANCE_METRIC = 'cosine'  # 'cosine' or 'euclidean'
 # Tạo các thư mục nếu chưa tồn tại
 RAW_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 PROCESSED_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+AUDIO_DIR.mkdir(parents=True, exist_ok=True)

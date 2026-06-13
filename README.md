@@ -41,11 +41,10 @@ voice_project/
 │       └── voice_database.db        # SQLite database
 ├── requirements.txt                 # Dependencies
 ├── README.md                        # This file
-├── PROJECT_STRUCTURE.md             # Architecture guide
-├── QUICK_REFERENCE.md               # Quick start
-├── GITHUB_PUSH_GUIDE.md             #  GitHub guide
+├── REPORT.md                        # Báo cáo
 ├── test_structure.py                # Structure test
-└── setup_git_branches.py            # Git workflow
+├── raw_audio/                       # File âm thanh gốc
+└── processed_audio/                 # features.json, metadata.csv, voice_database.db
 ```
 
 ##  Quick Start (5 phút)

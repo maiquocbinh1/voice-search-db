@@ -7,6 +7,7 @@ from typing import List, Dict
 import pandas as pd
 
 from backend.config import DB_FILE, FEATURES_FILE, METADATA_CSV
+from backend.search.vector_utils import FEATURE_VECTOR_DIM, features_to_normalized_vector
 
 
 class DatabaseManager:
@@ -54,9 +55,20 @@ class DatabaseManager:
             )
         ''')
         
+        # Bảng vector đã chuẩn hóa L2 (phục vụ tìm kiếm nhanh)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS feature_vectors (
+                file_id TEXT PRIMARY KEY,
+                vector_dim INTEGER NOT NULL,
+                vector_json TEXT NOT NULL,
+                FOREIGN KEY (file_id) REFERENCES metadata (file_id)
+            )
+        ''')
+        
         # Tạo index
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_file_id ON metadata (file_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_sample_rate ON metadata (sample_rate)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_feature_vectors_file_id ON feature_vectors (file_id)')
         
         conn.commit()
         conn.close()
@@ -154,6 +166,44 @@ class DatabaseManager:
         print(f"✅ Import {count} features records")
         return count
     
+    def import_feature_vectors(self, json_file: Path = FEATURES_FILE) -> int:
+        """
+        Tính vector L2 từ đặc trưng và lưu vào bảng feature_vectors.
+        
+        Args:
+            json_file: Đường dẫn file JSON chứa đặc trưng
+            
+        Returns:
+            Số vector được import
+        """
+        import json
+        
+        with open(json_file, 'r', encoding='utf-8') as f:
+            features_data = json.load(f)
+        
+        conn = sqlite3.connect(str(self.db_path))
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM feature_vectors')
+        
+        count = 0
+        for file_id, features in features_data.items():
+            normalized = features_to_normalized_vector(features)
+            cursor.execute('''
+                INSERT INTO feature_vectors (file_id, vector_dim, vector_json)
+                VALUES (?, ?, ?)
+            ''', (
+                file_id,
+                FEATURE_VECTOR_DIM,
+                json.dumps(normalized.tolist()),
+            ))
+            count += 1
+        
+        conn.commit()
+        conn.close()
+        print(f"✅ Import {count} normalized vectors (dim={FEATURE_VECTOR_DIM})")
+        return count
+    
     def verify_integrity(self) -> Dict[str, int]:
         """
         Kiểm tra tính toàn vẹn của database
@@ -171,6 +221,9 @@ class DatabaseManager:
         cursor.execute('SELECT COUNT(*) FROM features')
         features_count = cursor.fetchone()[0]
         
+        cursor.execute('SELECT COUNT(*) FROM feature_vectors')
+        vectors_count = cursor.fetchone()[0]
+        
         # Kiểm tra join
         cursor.execute('''
             SELECT COUNT(*) FROM metadata m
@@ -178,13 +231,24 @@ class DatabaseManager:
         ''')
         joined_count = cursor.fetchone()[0]
         
+        cursor.execute('''
+            SELECT COUNT(*) FROM metadata m
+            INNER JOIN feature_vectors v ON m.file_id = v.file_id
+        ''')
+        vectors_joined_count = cursor.fetchone()[0]
+        
         conn.close()
         
         status = {
             'metadata': metadata_count,
             'features': features_count,
+            'feature_vectors': vectors_count,
             'joined': joined_count,
-            'is_valid': metadata_count == features_count == joined_count
+            'vectors_joined': vectors_joined_count,
+            'is_valid': (
+                metadata_count == features_count == joined_count
+                and metadata_count == vectors_count == vectors_joined_count
+            )
         }
         
         return status
@@ -194,9 +258,10 @@ class DatabaseManager:
         status = self.verify_integrity()
         
         print("\n📊 Kiểm tra Database:")
-        print(f"  - Metadata: {status['metadata']} records")
-        print(f"  - Features: {status['features']} records")
-        print(f"  - Joined:   {status['joined']} records")
+        print(f"  - Metadata:        {status['metadata']} records")
+        print(f"  - Features:        {status['features']} records")
+        print(f"  - Feature vectors: {status['feature_vectors']} records")
+        print(f"  - Joined:          {status['joined']} records")
         
         if status['is_valid']:
             print("  ✅ Database toàn vẹn!")

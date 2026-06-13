@@ -11,7 +11,7 @@ except ImportError as exc:
     ) from exc
 
 from backend.audio.preprocessing import find_audio_files
-from backend.config import RAW_AUDIO_DIR, PROCESSED_AUDIO_DIR
+from backend.config import AUDIO_DIR, PROCESSED_AUDIO_DIR
 from backend.database.queries import DatabaseQueries
 from backend.search.voice_search import VoiceSearchEngine
 
@@ -171,7 +171,7 @@ def allowed_file(filename: str) -> bool:
 
 
 def get_dataset_files() -> list[str]:
-    return [p.name for p in sorted(find_audio_files(RAW_AUDIO_DIR))]
+    return [p.name for p in sorted(find_audio_files(AUDIO_DIR))]
 
 
 def build_results(query_path: Path, metric: str, top_k: int = 5) -> dict:
@@ -221,7 +221,7 @@ def create_app() -> 'Flask':
                     query_label = f'{upload_file.filename}'
                     query_audio = url_for('serve_upload', filename=safe_name)
             elif selected_dataset_file:
-                query_path = RAW_AUDIO_DIR / Path(selected_dataset_file).name
+                query_path = AUDIO_DIR / Path(selected_dataset_file).name
                 query_label = f'{selected_dataset_file}'
                 query_audio = url_for('serve_audio', filename=selected_dataset_file)
 
@@ -245,7 +245,7 @@ def create_app() -> 'Flask':
 
     @app.route('/audio/<path:filename>')
     def serve_audio(filename: str):
-        return send_from_directory(RAW_AUDIO_DIR, filename, as_attachment=False)
+        return send_from_directory(AUDIO_DIR, filename, as_attachment=False)
 
     @app.route('/uploads/<path:filename>')
     def serve_upload(filename: str):

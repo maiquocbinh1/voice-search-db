@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from backend.config import (
     TARGET_SAMPLE_RATE, N_MFCC, N_MELS,
-    RAW_AUDIO_DIR, PROCESSED_AUDIO_DIR, FEATURES_FILE, METADATA_CSV
+    AUDIO_DIR, PROCESSED_AUDIO_DIR, FEATURES_FILE, METADATA_CSV
 )
 from backend.audio.preprocessing import (
     find_audio_files, load_audio, normalize_audio, pad_or_trim
@@ -31,41 +31,41 @@ def extract_features(audio: np.ndarray, sr: int) -> Dict[str, float | List]:
     """
     features = {}
     
-    # MFCC (Mel-Frequency Cepstral Coefficients)
+    # MFCC (Mel-Frequency Cepstral Coefficients)(chat giong)
     mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC)
     features['mfcc_mean'] = mfcc.mean(axis=1).tolist()
     features['mfcc_std'] = mfcc.std(axis=1).tolist()
     
-    # Mel Spectrogram
+    # Mel Spectrogram(phan bo nang luong theo tan so)
     mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=N_MELS)
     features['mel_spec_mean'] = mel_spec.mean(axis=1).tolist()
     features['mel_spec_std'] = mel_spec.std(axis=1).tolist()
     
-    # Chroma STFT
+    # Chroma STFT(chia tan so theo cao do am thanh)
     chroma = librosa.feature.chroma_stft(y=audio, sr=sr)
     features['chroma_mean'] = chroma.mean(axis=1).tolist()
     features['chroma_std'] = chroma.std(axis=1).tolist()
     
-    # Spectral Centroid
+    # Spectral Centroid(do sang tram cua pho)
     spec_cent = librosa.feature.spectral_centroid(y=audio, sr=sr)[0]
     features['spectral_centroid_mean'] = float(spec_cent.mean())
     features['spectral_centroid_std'] = float(spec_cent.std())
     
-    # Spectral Contrast
+    # Spectral Contrast(do ro/rè cua am thanh)
     spec_contrast = librosa.feature.spectral_contrast(y=audio, sr=sr)
     features['spectral_contrast_mean'] = spec_contrast.mean(axis=1).tolist()
     features['spectral_contrast_std'] = spec_contrast.std(axis=1).tolist()
     
-    # Zero Crossing Rate
+    # Zero Crossing Rate(tan suat doi dau)
     zcr = librosa.feature.zero_crossing_rate(audio)[0]
     features['zcr_mean'] = float(zcr.mean())
     features['zcr_std'] = float(zcr.std())
     
-    # Energy
+    # Energy(nang luong trung binh)
     energy = np.sum(audio**2) / len(audio)
     features['energy'] = float(energy)
     
-    # RMS Energy
+    # RMS Energy(bien thien trung binh theo thoi gian)
     rms = librosa.feature.rms(y=audio)[0]
     features['rms_mean'] = float(rms.mean())
     features['rms_std'] = float(rms.std())
@@ -74,7 +74,7 @@ def extract_features(audio: np.ndarray, sr: int) -> Dict[str, float | List]:
 
 
 def process_audio_files(
-    input_dir: Path = RAW_AUDIO_DIR,
+    input_dir: Path = AUDIO_DIR,
     output_dir: Path = PROCESSED_AUDIO_DIR
 ) -> tuple[Dict, List[Dict]]:
     """

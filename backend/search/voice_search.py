@@ -4,8 +4,6 @@ Hệ thống tìm kiếm giọng nói tương tự
 from typing import List, Tuple
 from pathlib import Path
 
-import numpy as np
-import librosa
 from scipy.spatial.distance import cosine, euclidean
 
 from backend.config import (
@@ -14,6 +12,9 @@ from backend.config import (
 from backend.audio.preprocessing import normalize_audio, pad_or_trim, load_audio
 from backend.audio.processor import extract_features
 from backend.database.queries import DatabaseQueries
+from backend.search.vector_utils import (
+    features_to_normalized_vector,
+)
 
 
 class VoiceSearchEngine:
@@ -30,51 +31,6 @@ class VoiceSearchEngine:
         self.distance_metric = distance_metric
         self.top_k = top_k
         self.db_queries = DatabaseQueries()
-    
-    @staticmethod
-    def _features_to_vector(features: dict) -> np.ndarray:
-        """
-        Chuyển đặc trưng thành vector để so sánh
-        
-        Args:
-            features: Dictionary chứa đặc trưng
-            
-        Returns:
-            Vector numpy
-        """
-        vector = []
-        
-        # Scalar values
-        vector.append(features['spectral_centroid_mean'])
-        vector.append(features['spectral_centroid_std'])
-        vector.append(features['zcr_mean'])
-        vector.append(features['zcr_std'])
-        vector.append(features['energy'])
-        vector.append(features['rms_mean'])
-        vector.append(features['rms_std'])
-        
-        # MFCC
-        vector.extend(features['mfcc_mean'])
-        vector.extend(features['mfcc_std'])
-        
-        # Mel spectrogram
-        vector.extend(features['mel_spec_mean'])
-        vector.extend(features['mel_spec_std'])
-        
-        # Chroma
-        vector.extend(features['chroma_mean'])
-        vector.extend(features['chroma_std'])
-        
-        # Spectral contrast
-        vector.extend(features['spectral_contrast_mean'])
-        vector.extend(features['spectral_contrast_std'])
-        
-        return np.array(vector)
-    
-    @staticmethod
-    def _normalize_vector(vector: np.ndarray) -> np.ndarray:
-        """Chuẩn hóa vector"""
-        return vector / (np.linalg.norm(vector) + 1e-8)
     
     def search(self, query_audio_path: str | Path) -> List[Tuple[str, float]]:
         """
@@ -93,18 +49,20 @@ class VoiceSearchEngine:
         
         # Trích đặc trưng
         query_features = extract_features(query_audio, TARGET_SAMPLE_RATE)
-        query_vector = self._features_to_vector(query_features)
-        query_vector = self._normalize_vector(query_vector)
+        query_vector = features_to_normalized_vector(query_features)
         
-        # Tải tất cả đặc trưng từ database
-        all_features = self.db_queries.load_features_from_db()
+        # Ưu tiên vector L2 đã lưu trong bảng feature_vectors
+        all_vectors = self.db_queries.load_normalized_vectors_from_db()
+        if not all_vectors:
+            all_features = self.db_queries.load_features_from_db()
+            all_vectors = {
+                file_id: features_to_normalized_vector(features)
+                for file_id, features in all_features.items()
+            }
         
         # So sánh
         distances = []
-        for file_id, features in all_features.items():
-            db_vector = self._features_to_vector(features)
-            db_vector = self._normalize_vector(db_vector)
-            
+        for file_id, db_vector in all_vectors.items():
             if self.distance_metric == 'cosine':
                 distance = cosine(query_vector, db_vector)
             else:  # euclidean

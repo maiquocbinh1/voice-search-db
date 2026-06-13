@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
+import numpy as np
 import pandas as pd
 
 from backend.config import DB_FILE
@@ -153,3 +154,45 @@ class DatabaseQueries:
         conn.close()
         
         return [row[0] for row in rows]
+    
+    def load_normalized_vectors_from_db(self) -> Dict[str, np.ndarray]:
+        """
+        Tải vector đã chuẩn hóa L2 từ bảng feature_vectors.
+        
+        Returns:
+            Dictionary file_id -> vector numpy (độ dài 199)
+        """
+        conn = sqlite3.connect(str(self.db_path))
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='feature_vectors'"
+        )
+        if cursor.fetchone() is None:
+            conn.close()
+            return {}
+        
+        cursor.execute('SELECT file_id, vector_json FROM feature_vectors')
+        rows = cursor.fetchall()
+        conn.close()
+        
+        vectors = {}
+        for file_id, vector_json in rows:
+            vectors[file_id] = np.array(json.loads(vector_json), dtype=np.float64)
+        return vectors
+    
+    def get_normalized_vector_by_id(self, file_id: str) -> np.ndarray | None:
+        """Lấy vector L2 đã chuẩn hóa của một file."""
+        conn = sqlite3.connect(str(self.db_path))
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            'SELECT vector_json FROM feature_vectors WHERE file_id = ?',
+            (file_id,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row is None:
+            return None
+        return np.array(json.loads(row[0]), dtype=np.float64)
